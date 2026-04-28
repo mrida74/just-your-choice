@@ -5,7 +5,10 @@ import {
   getProducts,
   parseProductPayload,
 } from "@/lib/product-service";
-import { isProductCategory } from "@/lib/constants/categories";
+import {
+  isProductCategory,
+  type ProductCategory,
+} from "@/lib/constants/categories";
 
 export async function GET(request: Request) {
   try {
@@ -24,8 +27,14 @@ export async function GET(request: Request) {
       );
     }
 
+    const category: ProductCategory | undefined = categoryParam
+      ? isProductCategory(categoryParam)
+        ? categoryParam
+        : undefined
+      : undefined;
+
     const products = await getProducts({
-      category: categoryParam,
+      category,
       search: search || undefined,
       minPrice: Number.isFinite(minPrice) ? minPrice : undefined,
       maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,

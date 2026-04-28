@@ -41,8 +41,13 @@ export function parseProductPayload(payload: unknown): ProductPayload {
     throw new Error("Invalid payload.");
   }
 
-  const input = payload as Partial<ProductPayload> & {
-    images?: string[] | string;
+  const input = payload as {
+    title?: unknown;
+    description?: unknown;
+    price?: unknown;
+    category?: unknown;
+    images?: unknown;
+    stock?: unknown;
   };
 
   const category = String(input.category ?? "").toLowerCase();
@@ -52,6 +57,9 @@ export function parseProductPayload(payload: unknown): ProductPayload {
 
   const images = Array.isArray(input.images)
     ? input.images
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean)
     : typeof input.images === "string"
       ? input.images
           .split(",")
@@ -61,12 +69,15 @@ export function parseProductPayload(payload: unknown): ProductPayload {
 
   const price = Number(input.price);
   const stock = Number(input.stock);
+  const title = typeof input.title === "string" ? input.title.trim() : "";
+  const description =
+    typeof input.description === "string" ? input.description.trim() : "";
 
-  if (!input.title || input.title.trim().length < 2) {
+  if (title.length < 2) {
     throw new Error("Title is required and must be at least 2 characters.");
   }
 
-  if (!input.description || input.description.trim().length < 8) {
+  if (description.length < 8) {
     throw new Error("Description is required and must be at least 8 characters.");
   }
 
@@ -83,8 +94,8 @@ export function parseProductPayload(payload: unknown): ProductPayload {
   }
 
   return {
-    title: input.title.trim(),
-    description: input.description.trim(),
+    title,
+    description,
     price,
     category,
     images,
