@@ -192,6 +192,25 @@ export async function getProductsByCategory(
   return getProducts({ category, limit });
 }
 
+export async function getProductById(id: string) {
+  try {
+    await connectToDatabase();
+
+    const found = await ProductModel.findById(id).lean();
+    if (found) {
+      return serializeProduct({
+        ...found,
+        category: found.category as ProductCategory,
+        images: (found.images ?? []) as string[],
+      });
+    }
+  } catch {
+    // fall through to mock
+  }
+
+  return MOCK_PRODUCTS.find((p) => p._id === id) || null;
+}
+
 export async function createProduct(payload: ProductPayload) {
   await connectToDatabase();
   const created = await ProductModel.create(payload);
