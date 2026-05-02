@@ -8,9 +8,9 @@ import DetailsTabs from "./DetailsTabs";
 import type { ProductItem } from "@/types/product";
 import { CATEGORY_LABELS } from "@/lib/constants/categories";
 
-type Props = { product: ProductItem; related?: React.ReactNode };
+type Props = { product: ProductItem; children?: React.ReactNode };
 
-export default function ProductDetailsV2({ product, related }: Props) {
+export default function ProductDetailsV2({ product, children }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <nav className="mb-5 flex items-center gap-2 text-sm text-zinc-600">
@@ -42,7 +42,7 @@ export default function ProductDetailsV2({ product, related }: Props) {
 
       <DetailsTabs product={product} />
 
-      {related}
+      {children}
     </main>
   );
 }
