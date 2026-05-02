@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
           id: order._id,
           orderNumber: order.orderNumber,
           total: order.pricing!.total,
-          email: order.customer.email,
+          email: order.customer!.email,
         },
       },
       { status: 201 }
