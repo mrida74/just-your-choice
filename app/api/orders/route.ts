@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         order: {
           id: order._id,
           orderNumber: order.orderNumber,
-          total: order.pricing.total,
+          total: order.pricing!.total,
           email: order.customer.email,
         },
       },
