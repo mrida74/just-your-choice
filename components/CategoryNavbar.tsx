@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ShoppingCart, Menu, X } from "lucide-react";
 
 import { getCartCount } from "@/lib/cart";
 import { PRODUCT_CATEGORIES } from "@/lib/constants/categories";
@@ -53,9 +54,9 @@ export default function CategoryNavbar() {
         <div className="flex items-center gap-2 md:hidden">
           <Link
             href="/cart"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-600"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-600 hover:bg-pink-100 transition-colors"
           >
-            Cart
+            <ShoppingCart size={18} />
             {cartCount > 0 ? (
               <span className="inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-pink-500 px-1 text-[11px] font-bold text-white">
                 {cartCount}
@@ -67,13 +68,9 @@ export default function CategoryNavbar() {
             type="button"
             aria-label="Open category menu"
             onClick={() => setMobileMenuOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-pink-200 bg-white text-pink-600 shadow-sm"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-pink-200 bg-white text-pink-600 shadow-sm hover:bg-pink-50 transition-colors"
           >
-            <span className="flex flex-col gap-1.5">
-              <span className="h-0.5 w-4 rounded-full bg-current" />
-              <span className="h-0.5 w-4 rounded-full bg-current" />
-              <span className="h-0.5 w-4 rounded-full bg-current" />
-            </span>
+            <Menu size={20} />
           </button>
         </div>
 
@@ -89,12 +86,13 @@ export default function CategoryNavbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                  "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                   isActive
                     ? "bg-pink-500 text-white"
                     : "text-zinc-700 hover:bg-pink-50 hover:text-pink-600"
                 )}
               >
+                {item.href === "/cart" && <ShoppingCart size={18} />}
                 {item.label}
                 {item.href === "/cart" && cartCount > 0 ? (
                   <span className="ml-2 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-bold text-pink-600">
@@ -121,9 +119,10 @@ export default function CategoryNavbar() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-full border border-pink-200 px-3 py-1 text-xs font-semibold text-zinc-600"
+                className="rounded-full border border-pink-200 p-1 text-zinc-600 hover:bg-pink-50 transition-colors"
+                aria-label="Close menu"
               >
-                Close
+                <X size={18} />
               </button>
             </div>
 
@@ -146,7 +145,10 @@ export default function CategoryNavbar() {
                         : "border-pink-100 bg-pink-50/60 text-zinc-700"
                     )}
                   >
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-2">
+                      {item.href === "/cart" && <ShoppingCart size={18} />}
+                      <span>{item.label}</span>
+                    </div>
                     {item.href === "/cart" && cartCount > 0 ? (
                       <span className="inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-bold text-pink-600">
                         {cartCount}

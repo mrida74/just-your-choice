@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { ShoppingCart, Check } from "lucide-react";
 
 import { addToCart } from "@/lib/cart";
 import { CATEGORY_LABELS } from "@/lib/constants/categories";
@@ -55,9 +56,19 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             type="button"
             onClick={handleAddToCart}
-            className="whitespace-nowrap rounded-full border border-pink-300 px-3 py-1 text-xs font-semibold text-pink-600 transition-colors hover:bg-pink-600 hover:text-white"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-pink-300 px-3 py-1 text-xs font-semibold text-pink-600 transition-colors hover:bg-pink-600 hover:text-white"
           >
-            {added ? "Added" : "Add to Cart"}
+            {added ? (
+              <>
+                <Check size={14} />
+                Added
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={14} />
+                Add to Cart
+              </>
+            )}
           </button>
         </div>
       </div>

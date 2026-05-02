@@ -13,7 +13,7 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-      <section className="rounded-3xl bg-gradient-to-r from-pink-100 via-pink-50 to-rose-100 p-6 shadow-sm">
+      <section className="rounded-3xl bg-linear-to-r from-pink-100 via-pink-50 to-rose-100 p-6 shadow-sm">
         <h1 className="text-3xl font-black tracking-tight text-zinc-900">Admin Dashboard</h1>
         <p className="mt-2 text-sm text-zinc-600">
           Add products with required category selection and manage inventory per section.

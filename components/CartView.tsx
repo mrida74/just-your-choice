@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 
 import {
   clearCart,
@@ -13,9 +15,13 @@ import { formatPrice } from "@/lib/utils";
 import type { CartItem } from "@/types/cart";
 
 export default function CartView() {
-  const [items, setItems] = useState<CartItem[]>(() => getCartItems());
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    setItems(getCartItems());
+    setIsHydrated(true);
+
     const sync = () => setItems(getCartItems());
     window.addEventListener("cart:updated", sync);
 
@@ -27,11 +33,23 @@ export default function CartView() {
     [items]
   );
 
-  if (items.length === 0) {
+  if (!isHydrated) {
     return (
       <div className="rounded-3xl border border-pink-100 bg-white p-8 shadow-sm">
         <h1 className="text-3xl font-black text-zinc-900">Your Cart</h1>
-        <p className="mt-2 text-sm text-zinc-600">Your cart is empty. Add products to continue.</p>
+        <p className="mt-2 text-sm text-zinc-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="rounded-3xl border border-pink-100 bg-white p-8 shadow-sm">
+        <div className="flex items-center gap-3">
+          <ShoppingCart size={32} className="text-pink-400" />
+          <h1 className="text-3xl font-black text-zinc-900">Your Cart</h1>
+        </div>
+        <p className="mt-4 text-sm text-zinc-600">Your cart is empty. Add products to continue.</p>
       </div>
     );
   }
@@ -66,24 +84,27 @@ export default function CartView() {
                 <button
                   type="button"
                   onClick={() => setItems(updateCartQuantity(item.id, item.quantity - 1))}
-                  className="h-8 w-8 rounded-full border border-pink-300 text-sm font-bold text-pink-600"
+                  className="h-8 w-8 rounded-full border border-pink-300 text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center"
+                  aria-label="Decrease quantity"
                 >
-                  -
+                  <Minus size={16} />
                 </button>
                 <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                 <button
                   type="button"
                   onClick={() => setItems(updateCartQuantity(item.id, item.quantity + 1))}
-                  className="h-8 w-8 rounded-full border border-pink-300 text-sm font-bold text-pink-600"
+                  className="h-8 w-8 rounded-full border border-pink-300 text-pink-600 hover:bg-pink-50 transition-colors flex items-center justify-center"
+                  aria-label="Increase quantity"
                 >
-                  +
+                  <Plus size={16} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setItems(removeFromCart(item.id))}
-                  className="ml-2 rounded-full border border-pink-200 px-3 py-1 text-xs font-semibold text-zinc-600"
+                  className="ml-2 rounded-full border border-red-200 p-1.5 text-red-600 hover:bg-red-50 transition-colors"
+                  aria-label="Remove item"
                 >
-                  Remove
+                  <Trash2 size={16} />
                 </button>
               </div>
             </article>
@@ -97,16 +118,16 @@ export default function CartView() {
           <span>Subtotal</span>
           <span className="font-semibold text-zinc-900">{formatPrice(subtotal)}</span>
         </div>
-        <button
-          type="button"
-          className="mt-5 w-full rounded-xl bg-pink-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-600"
+        <Link
+          href="/checkout"
+          className="mt-5 block w-full rounded-full bg-black text-white px-4 py-3 text-sm font-bold text-center transition-colors hover:bg-zinc-800"
         >
           Checkout
-        </button>
+        </Link>
         <button
           type="button"
           onClick={() => setItems(clearCart() ?? [])}
-          className="mt-3 w-full rounded-xl border border-pink-200 px-4 py-2 text-sm font-semibold text-pink-600 transition-colors hover:bg-pink-50"
+          className="mt-3 w-full rounded-full border border-pink-200 px-4 py-2 text-sm font-semibold text-pink-600 transition-colors hover:bg-pink-50"
         >
           Clear Cart
         </button>

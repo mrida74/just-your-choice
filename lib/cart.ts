@@ -42,12 +42,12 @@ export function getCartCount() {
   return getCartItems().reduce((total, item) => total + item.quantity, 0);
 }
 
-export function addToCart(product: ProductItem) {
+export function addToCart(product: ProductItem, quantity: number = 1) {
   const items = getCartItems();
   const existing = items.find((item) => item.id === product._id);
 
   if (existing) {
-    existing.quantity = Math.min(existing.quantity + 1, product.stock);
+    existing.quantity = Math.min(existing.quantity + quantity, product.stock);
   } else {
     items.push({
       id: product._id,
@@ -55,7 +55,7 @@ export function addToCart(product: ProductItem) {
       price: product.price,
       image: product.images[0] || "/placeholder-product.svg",
       category: product.category,
-      quantity: 1,
+      quantity: Math.min(quantity, product.stock),
       stock: product.stock,
     });
   }
