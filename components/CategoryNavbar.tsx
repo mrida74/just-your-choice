@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Heart, LogIn, Menu, Search, ShoppingCart, X } from "lucide-react";
 
 import { getCartCount } from "@/lib/cart";
+import Logo from "./Logo";
 import { CATEGORY_LABELS, PRODUCT_CATEGORIES } from "@/lib/constants/categories";
 import { cn } from "@/lib/utils";
 
@@ -70,21 +71,8 @@ export default function CategoryNavbar() {
             className="flex shrink-0 items-center gap-3"
             aria-label="Just Your Choice home"
           >
-            <div className="flex h-12 w-36 items-center gap-3 sm:h-14 sm:w-44">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm sm:h-14 sm:w-14">
-                <span className="text-[14px] font-extrabold tracking-wide text-pink-600" style={{ fontFamily: "var(--font-pacifico)" }}>
-                  Just
-                </span>
-              </div>
-
-              <div className="flex flex-col leading-tight">
-                <span className="text-[18px] font-extrabold text-pink-600" style={{ fontFamily: "var(--font-pacifico)" }}>
-                  Your
-                </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-600" style={{ marginTop: -4 }}>
-                  CHOICE
-                </span>
-              </div>
+            <div className="flex items-center">
+              <Logo width={220} />
             </div>
           </Link>
 
