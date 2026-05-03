@@ -1,7 +1,15 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017";
-const MONGODB_DB = process.env.MONGODB_DB || "just-your-choice";
+import fs from "fs";
+import path from "path";
+
+// Load from .env.local
+const envPath = path.resolve(process.cwd(), ".env.local");
+const envContent = fs.readFileSync(envPath, "utf-8");
+const uriMatch = envContent.match(/^MONGODB_URI=(.*)$/m);
+let MONGODB_URI = uriMatch ? uriMatch[1].trim().replace(/^["']|["']$/g, "") : "mongodb://127.0.0.1:27017";
+const dbMatch = envContent.match(/^MONGODB_DB=(.*)$/m);
+const MONGODB_DB = dbMatch ? dbMatch[1].trim() : "just-your-choice";
 
 const categories = ["saree", "clothing", "bags", "cosmetics", "skincare"];
 
