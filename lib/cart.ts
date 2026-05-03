@@ -1,5 +1,6 @@
 import type { ProductItem } from "@/types/product";
 import type { CartItem } from "@/types/cart";
+import { getSafeImageSrc } from "@/lib/utils";
 
 const CART_KEY = "just-your-choice-cart";
 
@@ -23,7 +24,10 @@ export function getCartItems(): CartItem[] {
       return [];
     }
 
-    return parsed;
+    return parsed.map((item) => ({
+      ...item,
+      image: getSafeImageSrc(item.image),
+    }));
   } catch {
     return [];
   }
@@ -53,7 +57,7 @@ export function addToCart(product: ProductItem, quantity: number = 1) {
       id: product._id,
       title: product.title,
       price: product.price,
-      image: product.images[0] || "/placeholder-product.svg",
+      image: getSafeImageSrc(product.images[0]),
       category: product.category,
       quantity: Math.min(quantity, product.stock),
       stock: product.stock,

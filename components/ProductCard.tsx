@@ -7,7 +7,7 @@ import { ShoppingCart, Check } from "lucide-react";
 
 import { addToCart } from "@/lib/cart";
 import { CATEGORY_LABELS } from "@/lib/constants/categories";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getSafeImageSrc } from "@/lib/utils";
 import type { ProductItem } from "@/types/product";
 
 type ProductCardProps = {
@@ -15,7 +15,7 @@ type ProductCardProps = {
 };
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const [image, setImage] = useState(product.images[0] || "/placeholder-product.svg");
+  const [image, setImage] = useState(getSafeImageSrc(product.images[0]));
   const [added, setAdded] = useState(false);
 
   const handleAddToCart = () => {

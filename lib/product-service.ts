@@ -1,6 +1,7 @@
 import { isProductCategory, type ProductCategory } from "@/lib/constants/categories";
 import { connectToDatabase } from "@/lib/mongodb";
 import ProductModel from "@/lib/models/Product";
+import { getSafeImageList } from "@/lib/utils";
 import type { ProductItem, ProductPayload } from "@/types/product";
 
 type ProductQuery = {
@@ -28,7 +29,7 @@ function serializeProduct(product: {
     description: product.description,
     price: product.price,
     category: product.category,
-    images: product.images,
+    images: getSafeImageList(product.images),
     stock: product.stock,
     createdAt: product.createdAt?.toISOString(),
     updatedAt: product.updatedAt?.toISOString(),

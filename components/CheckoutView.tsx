@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Loader2, AlertCircle } from "lucide-react";
 
 import { clearCart, getCartItems } from "@/lib/cart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getSafeImageSrc } from "@/lib/utils";
 import type { CartItem } from "@/types/cart";
 
 type FormData = {
@@ -408,7 +408,7 @@ export default function CheckoutView() {
             <div key={item.id} className="flex gap-3 text-sm">
               <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-pink-50 shrink-0">
                 <Image
-                  src={item.image}
+                  src={getSafeImageSrc(item.image)}
                   alt={item.title}
                   fill
                   className="object-cover"

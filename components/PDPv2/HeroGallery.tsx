@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Minus, Plus, RotateCcw } from "lucide-react";
+import { getSafeImageList } from "@/lib/utils";
 import type { ProductItem } from "@/types/product";
 
 type Props = { product: ProductItem };
 
 export default function HeroGallery({ product }: Props) {
-  const images = product.images && product.images.length > 0 ? product.images : ["/placeholder-product.svg"];
+  const images = getSafeImageList(product.images);
   const [index, setIndex] = useState(0);
   const [zoom, setZoom] = useState(1);
 

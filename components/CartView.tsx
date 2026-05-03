@@ -11,7 +11,7 @@ import {
   removeFromCart,
   updateCartQuantity,
 } from "@/lib/cart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getSafeImageSrc } from "@/lib/utils";
 import type { CartItem } from "@/types/cart";
 
 export default function CartView() {
@@ -67,7 +67,7 @@ export default function CartView() {
             >
               <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-pink-50">
                 <Image
-                  src={item.image}
+                  src={getSafeImageSrc(item.image)}
                   alt={item.title}
                   fill
                   className="object-cover"
