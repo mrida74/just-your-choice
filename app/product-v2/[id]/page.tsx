@@ -5,6 +5,9 @@ import RelatedProducts from "@/components/PDPv2/RelatedProducts";
 import { getProductById } from "@/lib/product-service";
 import type { ProductItem } from "@/types/product";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const product = await getProductById(id);

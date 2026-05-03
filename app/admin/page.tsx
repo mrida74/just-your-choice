@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: "Manage products by category and add inventory with strict category controls.",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminPage() {
   const products = await getProducts({ limit: 200 });
 

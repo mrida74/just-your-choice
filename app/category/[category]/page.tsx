@@ -53,6 +53,9 @@ export function generateStaticParams() {
   return PRODUCT_CATEGORIES.map((category) => ({ category }));
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function CategoryPage({
   params,
   searchParams,
@@ -77,7 +80,7 @@ export default async function CategoryPage({
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <section className="rounded-3xl bg-gradient-to-r from-pink-100 via-pink-50 to-rose-100 p-5 shadow-sm sm:p-6">
+      <section className="rounded-3xl bg-linear-to-r from-pink-100 via-pink-50 to-rose-100 p-5 shadow-sm sm:p-6">
         <h1 className="text-2xl font-black tracking-tight text-zinc-900 sm:text-3xl">
           {CATEGORY_LABELS[category]}
         </h1>

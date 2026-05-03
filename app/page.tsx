@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     "Explore women's products with separate sections for saree, clothing, bags, cosmetics, and skincare.",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   const productsByCategory = await Promise.all(
     PRODUCT_CATEGORIES.map(async (category) => ({
