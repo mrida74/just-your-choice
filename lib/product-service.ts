@@ -1,5 +1,4 @@
 import { isProductCategory, type ProductCategory } from "@/lib/constants/categories";
-import { MOCK_PRODUCTS } from "@/lib/mock-products";
 import { connectToDatabase } from "@/lib/mongodb";
 import ProductModel from "@/lib/models/Product";
 import type { ProductItem, ProductPayload } from "@/types/product";
@@ -137,33 +136,6 @@ function buildFilter(query: ProductQuery) {
   return filter;
 }
 
-function getMockProducts(query: ProductQuery) {
-  return MOCK_PRODUCTS.filter((product) => {
-    if (query.category && product.category !== query.category) {
-      return false;
-    }
-
-    if (
-      query.search &&
-      !`${product.title} ${product.description}`
-        .toLowerCase()
-        .includes(query.search.toLowerCase())
-    ) {
-      return false;
-    }
-
-    if (typeof query.minPrice === "number" && product.price < query.minPrice) {
-      return false;
-    }
-
-    if (typeof query.maxPrice === "number" && product.price > query.maxPrice) {
-      return false;
-    }
-
-    return true;
-  }).slice(0, query.limit ?? 60);
-}
-
 export async function getProducts(query: ProductQuery = {}) {
   try {
     await connectToDatabase();
@@ -181,7 +153,7 @@ export async function getProducts(query: ProductQuery = {}) {
       })
     );
   } catch {
-    return getMockProducts(query);
+    return [];
   }
 }
 
@@ -205,10 +177,10 @@ export async function getProductById(id: string) {
       });
     }
   } catch {
-    // fall through to mock
+    return null;
   }
 
-  return MOCK_PRODUCTS.find((p) => p._id === id) || null;
+  return null;
 }
 
 export async function createProduct(payload: ProductPayload) {
