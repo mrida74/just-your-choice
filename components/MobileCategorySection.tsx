@@ -37,6 +37,7 @@ export default function MobileCategorySection() {
                     alt={CATEGORY_LABELS[key]}
                     width={1920}
                     height={1080}
+                    loading="eager"
                     className="w-full block object-cover object-center"
                   />
                   <div className="absolute left-4 top-4 text-2xl font-medium text-white drop-shadow-lg sm:text-3xl">

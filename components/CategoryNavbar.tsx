@@ -65,7 +65,7 @@ export default function CategoryNavbar() {
         </div>
       ) : null}
 
-      <div className="border-b border-pink-100 bg-white/95">
+      <div id="site-navbar-top" className="border-b border-pink-100 bg-white/95">
         <nav className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Just Your Choice home">
             <div className="flex items-center">

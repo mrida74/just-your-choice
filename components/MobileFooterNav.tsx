@@ -23,7 +23,7 @@ export default function MobileFooterNav() {
   }, []);
 
   useEffect(() => {
-    const navbar = document.getElementById("site-navbar");
+    const navbar = document.getElementById("site-navbar-top");
 
     if (!navbar) {
       setNavbarVisible(false);
@@ -34,7 +34,7 @@ export default function MobileFooterNav() {
       ([entry]) => {
         setNavbarVisible(entry.isIntersecting);
       },
-      { threshold: 0 }
+      { threshold: 1 }
     );
 
     observer.observe(navbar);
