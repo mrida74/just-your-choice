@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CATEGORY_LABELS, PRODUCT_CATEGORIES } from "@/lib/constants/categories";
+import { CATEGORY_LABELS, PRODUCT_CATEGORIES, type ProductCategory } from "@/lib/constants/categories";
 import { cn } from "@/lib/utils";
 
 export default function MobileCategorySection() {
@@ -13,7 +13,7 @@ export default function MobileCategorySection() {
     return null;
   }
 
-  const CATEGORY_IMAGES: Record<string, string> = {
+  const CATEGORY_IMAGES: Record<ProductCategory, string> = {
     saree: "/image/saree.jpg",
     clothing: "/image/cloth.jpg",
     bags: "/image/leather.jpg",
@@ -25,12 +25,12 @@ export default function MobileCategorySection() {
     <div className="border-t border-pink-100 bg-white md:hidden">
       <div className="space-y-2">
         {PRODUCT_CATEGORIES.map((category) => {
-          const key = category as string;
+          const key = category as ProductCategory;
           const href = `/category/${category}`;
-          const img = CATEGORY_IMAGES[key] || CATEGORY_IMAGES[Object.keys(CATEGORY_IMAGES)[0]];
+          const img = CATEGORY_IMAGES[key] || CATEGORY_IMAGES[Object.keys(CATEGORY_IMAGES)[0] as ProductCategory];
           const isSaree = key === "saree";
 
-          const FIT_CLASSES: Record<string, string> = {
+          const FIT_CLASSES: Record<ProductCategory, string> = {
             saree: "object-cover object-center",
             clothing: "object-cover object-center",
             bags: "object-cover object-center",
