@@ -43,3 +43,31 @@ body {
     radial-gradient(circle at top left, #ffe4ef 0, transparent 45%),
     radial-gradient(circle at bottom right, #ffd7e8 0, transparent 50%);
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.page-transition {
+  animation: fadeIn 300ms ease-in-out;
+}
+
+@keyframes loadingBar {
+  0% {
+    transform: scaleX(0.08) translateX(-50%);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleX(0.55) translateX(5%);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(0.08) translateX(110%);
+    opacity: 0.7;
+  }
+}
