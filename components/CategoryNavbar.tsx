@@ -8,6 +8,7 @@ import { Heart, LogIn, Menu, Search, ShoppingCart, X } from "lucide-react";
 import { getCartCount } from "@/lib/cart";
 import Logo from "./Logo";
 import { CATEGORY_LABELS, PRODUCT_CATEGORIES } from "@/lib/constants/categories";
+import MobileCategorySection from "./MobileCategorySection";
 import { cn } from "@/lib/utils";
 
 export default function CategoryNavbar() {
@@ -66,11 +67,7 @@ export default function CategoryNavbar() {
 
       <div className="border-b border-pink-100 bg-white/95">
         <nav className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-3"
-            aria-label="Just Your Choice home"
-          >
+          <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Just Your Choice home">
             <div className="flex items-center">
               <Logo width={220} />
             </div>
@@ -147,9 +144,7 @@ export default function CategoryNavbar() {
                   href={href}
                   className={cn(
                     "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-                    isActive
-                      ? "bg-pink-500 text-white"
-                      : "bg-white text-zinc-700 hover:bg-pink-50 hover:text-pink-600"
+                    isActive ? "bg-pink-500 text-white" : "bg-white text-zinc-700 hover:bg-pink-50 hover:text-pink-600"
                   )}
                 >
                   {CATEGORY_LABELS[category]}
@@ -189,21 +184,13 @@ export default function CategoryNavbar() {
                 setMobileCategoryMenuOpen((value) => !value);
               }}
               className="inline-flex shrink-0 items-center justify-center text-pink-400 transition-colors hover:text-pink-600"
-              aria-label={
-                mobileCategoryMenuOpen ? "Close product categories" : "Open product categories"
-              }
+              aria-label={mobileCategoryMenuOpen ? "Close product categories" : "Open product categories"}
             >
-              {mobileCategoryMenuOpen ? (
-                <X size={28} strokeWidth={1.6} />
-              ) : (
-                <Menu size={28} />
-              )}
+              {mobileCategoryMenuOpen ? <X size={28} strokeWidth={1.6} /> : <Menu size={28} />}
             </button>
 
             <div className="min-w-0 flex-1">
-              <span className="block text-[28px] font-normal tracking-tight text-zinc-800">
-                All Products
-              </span>
+              <span className="block text-[28px] font-normal tracking-tight text-zinc-800">All Products</span>
             </div>
 
             <button
@@ -212,17 +199,10 @@ export default function CategoryNavbar() {
                 setMobileCategoryMenuOpen(false);
                 setMobileSiteMenuOpen((value) => !value);
               }}
-              className={cn(
-                "inline-flex shrink-0 items-center justify-center transition-colors hover:text-pink-600",
-                mobileSiteMenuOpen ? "text-pink-500" : "text-pink-400"
-              )}
+              className={cn("inline-flex shrink-0 items-center justify-center transition-colors hover:text-pink-600", mobileSiteMenuOpen ? "text-pink-500" : "text-pink-400")}
               aria-label={mobileSiteMenuOpen ? "Close site menu" : "Open site menu"}
             >
-              {mobileSiteMenuOpen ? (
-                <X size={28} strokeWidth={1.6} />
-              ) : (
-                <Menu size={28} />
-              )}
+              {mobileSiteMenuOpen ? <X size={28} strokeWidth={1.6} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
@@ -242,20 +222,8 @@ export default function CategoryNavbar() {
                     const isActive = pathname.startsWith(href);
 
                     return (
-                      <Link
-                        key={category}
-                        href={href}
-                        onClick={closeMobileMenus}
-                        className={cn(
-                          mobileDrawerItemClass,
-                          isActive
-                            ? "text-pink-600"
-                            : "text-zinc-800"
-                        )}
-                      >
-                        <span className={mobileDrawerTextClass}>
-                          {CATEGORY_LABELS[category]}
-                        </span>
+                      <Link key={category} href={href} onClick={closeMobileMenus} className={cn(mobileDrawerItemClass, isActive ? "text-pink-600" : "text-zinc-800")}>
+                        <span className={mobileDrawerTextClass}>{CATEGORY_LABELS[category]}</span>
                       </Link>
                     );
                   })}
@@ -267,18 +235,9 @@ export default function CategoryNavbar() {
               <div>
                 <div className="pt-1">
                   {siteMenuItems.map((item) => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={closeMobileMenus}
-                      className={cn(mobileDrawerItemClass, "text-zinc-800 hover:text-zinc-950")}
-                    >
+                    <button key={item.label} type="button" onClick={closeMobileMenus} className={cn(mobileDrawerItemClass, "text-zinc-800 hover:text-zinc-950")}>
                       <span className={mobileDrawerTextClass}>{item.label}</span>
-                      {item.expandable ? (
-                        <span className="ml-3 inline-flex h-9 w-9 shrink-0 items-center justify-center bg-pink-500 text-[20px] leading-none text-white">
-                          +
-                        </span>
-                      ) : null}
+                      {item.expandable ? <span className="ml-3 inline-flex h-9 w-9 shrink-0 items-center justify-center bg-pink-500 text-[20px] leading-none text-white">+</span> : null}
                     </button>
                   ))}
                 </div>
@@ -287,6 +246,8 @@ export default function CategoryNavbar() {
           </div>
         </div>
       </div>
+
+      <MobileCategorySection />
     </header>
   );
 }
