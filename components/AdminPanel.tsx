@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Package, ShoppingBag } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  LayoutDashboard,
+  Package,
+  PlusCircle,
+  RefreshCw,
+  ShoppingBag,
+  Sparkles,
+} from "lucide-react";
 
 import {
   CATEGORY_LABELS,
@@ -67,6 +76,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
   const [tab, setTab] = useState<"products" | "orders">("products");
   const [productList, setProductList] = useState(products);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersLoaded, setOrdersLoaded] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<ProductCategory>("saree");
   const [form, setForm] = useState<FormState>(initialFormState);
@@ -78,9 +88,47 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
     [productList, selectedCategory]
   );
 
-  // Fetch orders when tab changes to orders
+  const totalProducts = productList.length;
+  const activeOrders = orders.filter((order) => order.status !== "delivered" && order.status !== "cancelled").length;
+  const pendingOrders = orders.filter((order) => order.status === "pending").length;
+  const lowStockProducts = productList.filter((item) => item.stock <= 5).length;
+
+  const navigationItems = [
+    {
+      key: "overview",
+      label: "Overview",
+      icon: LayoutDashboard,
+      hint: "Dashboard snapshot",
+      active: true,
+    },
+    {
+      key: "products",
+      label: "Products",
+      icon: Package,
+      hint: `${totalProducts} items`,
+      active: tab === "products",
+      onClick: () => setTab("products"),
+    },
+    {
+      key: "orders",
+      label: "Orders",
+      icon: ShoppingBag,
+      hint: ordersLoaded ? `${orders.length} orders` : ordersLoading ? "Loading..." : "Not loaded",
+      active: tab === "orders",
+      onClick: () => setTab("orders"),
+    },
+  ];
+
+  // Auto-load orders on mount
   useEffect(() => {
-    if (tab === "orders" && orders.length === 0) {
+    if (!ordersLoaded) {
+      fetchOrders();
+    }
+  }, []);
+
+  // Fetch orders if not loaded when tab changes to orders
+  useEffect(() => {
+    if (tab === "orders" && !ordersLoaded) {
       fetchOrders();
     }
   }, [tab]);
@@ -96,6 +144,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
       setStatusMessage("Failed to load orders");
     } finally {
       setOrdersLoading(false);
+      setOrdersLoaded(true);
     }
   };
 
@@ -168,39 +217,146 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-pink-100">
-        <button
-          onClick={() => setTab("products")}
-          className={`flex items-center gap-2 px-4 py-3 font-bold transition-colors ${
-            tab === "products"
-              ? "border-b-2 border-pink-600 text-pink-600"
-              : "text-zinc-600 hover:text-zinc-900"
-          }`}
-        >
-          <Package size={18} />
-          Products
-        </button>
-        <button
-          onClick={() => setTab("orders")}
-          className={`flex items-center gap-2 px-4 py-3 font-bold transition-colors ${
-            tab === "orders"
-              ? "border-b-2 border-pink-600 text-pink-600"
-              : "text-zinc-600 hover:text-zinc-900"
-          }`}
-        >
-          <ShoppingBag size={18} />
-          Orders
-        </button>
-      </div>
+    <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="h-fit rounded-3xl border border-pink-100 bg-white/90 p-4 shadow-[0_18px_40px_-30px_rgba(236,72,153,0.45)] backdrop-blur">
+        <div className="rounded-2xl bg-linear-to-br from-pink-600 via-pink-500 to-orange-400 px-4 py-4 text-white shadow-[0_18px_35px_-25px_rgba(236,72,153,0.7)]">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/80">
+            <Sparkles size={14} />
+            Command center
+          </div>
+          <p className="mt-3 text-sm leading-6 text-white/90">
+            Fast access to product creation, stock review, and order triage.
+          </p>
+        </div>
+
+        <nav className="mt-4 space-y-1">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={item.onClick}
+                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors ${
+                  item.active
+                    ? "bg-pink-600 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <span className="flex items-center gap-3">
+                  <span
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                      item.active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold">{item.label}</span>
+                    <span
+                      className={`block text-xs ${
+                        item.active ? "text-white/80" : "text-gray-500"
+                      }`}
+                    >
+                      {item.hint}
+                    </span>
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+            <AlertTriangle size={16} />
+            Attention
+          </div>
+          <p className="mt-2 text-sm text-amber-700">
+            {lowStockProducts} product{lowStockProducts === 1 ? "" : "s"} have low stock and need review.
+          </p>
+        </div>
+      </aside>
+
+      <section className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-3xl border border-pink-100 bg-white/90 p-5 shadow-sm backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-600">Total products</p>
+                <p className="mt-2 text-3xl font-black text-gray-900">{totalProducts}</p>
+              </div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 text-pink-600">
+                <Package size={22} />
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-pink-100 bg-white/90 p-5 shadow-sm backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-600">Active orders</p>
+                <p className="mt-2 text-3xl font-black text-gray-900">
+                  {ordersLoaded ? activeOrders : "—"}
+                </p>
+              </div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 text-pink-600">
+                <BarChart3 size={22} />
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-pink-100 bg-white/90 p-5 shadow-sm backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-600">Pending orders</p>
+                <p className="mt-2 text-3xl font-black text-gray-900">
+                  {ordersLoaded ? pendingOrders : "—"}
+                </p>
+              </div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 text-pink-600">
+                <ShoppingBag size={22} />
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-3xl border border-pink-100 bg-linear-to-r from-white via-white to-pink-50 px-5 py-4 shadow-sm">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-600">Workspace</p>
+            <h2 className="text-lg font-bold text-gray-900">
+              {tab === "products" ? "Product operations" : "Order operations"}
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => (tab === "orders" ? fetchOrders() : setStatusMessage("Ready to create a new product."))}
+            className="inline-flex items-center gap-2 rounded-xl border border-pink-200 px-4 py-2 text-sm font-semibold text-pink-700 transition-colors hover:border-pink-300 hover:bg-pink-50"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+        </div>
+      </section>
 
       {/* Products Tab */}
       {tab === "products" && (
         <>
-          <section className="rounded-2xl border border-pink-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-xl font-bold text-zinc-900">Add Product</h2>
-            <form className="grid gap-3 md:grid-cols-2" onSubmit={handleCreate}>
+          <section className="rounded-3xl border border-pink-100 bg-white/90 p-6 shadow-sm backdrop-blur">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-600">Catalog</p>
+                <h2 className="text-2xl font-black text-gray-900">Add product</h2>
+              </div>
+              <div className="hidden items-center gap-2 rounded-full bg-pink-50 px-3 py-2 text-sm text-pink-600 md:inline-flex">
+                <PlusCircle size={16} />
+                Create a new listing
+              </div>
+            </div>
+
+            <form className="grid gap-4 md:grid-cols-2" onSubmit={handleCreate}>
               <input
                 required
                 value={form.title}
@@ -208,7 +364,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                   setForm((prev) => ({ ...prev, title: event.target.value }))
                 }
                 placeholder="Product title"
-                className="rounded-xl border border-pink-200 px-3 py-2 text-sm outline-none ring-pink-400 focus:ring-2"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-pink-500 focus:bg-white focus:ring-2 focus:ring-pink-100"
               />
               <input
                 required
@@ -219,7 +375,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                   setForm((prev) => ({ ...prev, price: event.target.value }))
                 }
                 placeholder="Price"
-                className="rounded-xl border border-pink-200 px-3 py-2 text-sm outline-none ring-pink-400 focus:ring-2"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-pink-500 focus:bg-white focus:ring-2 focus:ring-pink-100"
               />
               <textarea
                 required
@@ -229,7 +385,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                 }
                 placeholder="Description"
                 rows={3}
-                className="rounded-xl border border-pink-200 px-3 py-2 text-sm outline-none ring-pink-400 focus:ring-2"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-pink-500 focus:bg-white focus:ring-2 focus:ring-pink-100"
               />
               <div className="space-y-3">
                 <select
@@ -241,7 +397,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                       category: event.target.value as ProductCategory,
                     }))
                   }
-                  className="w-full rounded-xl border border-pink-200 px-3 py-2 text-sm outline-none ring-pink-400 focus:ring-2"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-colors focus:border-pink-500 focus:bg-white focus:ring-2 focus:ring-pink-100"
                 >
                   {PRODUCT_CATEGORIES.map((category) => (
                     <option key={category} value={category}>
@@ -256,7 +412,7 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                     setForm((prev) => ({ ...prev, images: event.target.value }))
                   }
                   placeholder="Image URLs (comma separated)"
-                  className="w-full rounded-xl border border-pink-200 px-3 py-2 text-sm outline-none ring-pink-400 focus:ring-2"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-pink-500 focus:bg-white focus:ring-2 focus:ring-pink-100"
                 />
                 <input
                   required
@@ -267,30 +423,30 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                     setForm((prev) => ({ ...prev, stock: event.target.value }))
                   }
                   placeholder="Stock"
-                  className="w-full rounded-xl border border-pink-200 px-3 py-2 text-sm outline-none ring-pink-400 focus:ring-2"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-pink-500 focus:bg-white focus:ring-2 focus:ring-pink-100"
                 />
               </div>
               <button
                 type="submit"
-                className="md:col-span-2 rounded-xl bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-700"
+                className="md:col-span-2 inline-flex items-center justify-center gap-2 rounded-2xl bg-pink-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-pink-700 hover:shadow-[0_16px_35px_-20px_rgba(236,72,153,0.8)]"
               >
                 Create Product
               </button>
             </form>
-            <p className="mt-3 text-sm text-zinc-600">{statusMessage}</p>
+            <p className="mt-4 text-sm text-gray-600">{statusMessage}</p>
           </section>
 
-          <section className="rounded-2xl border border-pink-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex flex-wrap gap-2">
+          <section className="rounded-3xl border border-pink-100 bg-white/90 p-6 shadow-sm backdrop-blur">
+            <div className="mb-5 flex flex-wrap gap-2">
               {PRODUCT_CATEGORIES.map((category) => (
                 <button
                   key={category}
                   type="button"
                   onClick={() => setSelectedCategory(category)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                     selectedCategory === category
-                      ? "bg-pink-600 text-white"
-                      : "bg-pink-50 text-pink-600"
+                      ? "bg-pink-600 text-white shadow-sm"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   {CATEGORY_LABELS[category]}
@@ -301,25 +457,33 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
             <div className="overflow-x-auto">
               <table className="w-full min-w-150 text-left text-sm">
                 <thead>
-                  <tr className="border-b border-pink-100 text-zinc-500">
-                    <th className="py-2">Title</th>
-                    <th className="py-2">Price</th>
-                    <th className="py-2">Stock</th>
-                    <th className="py-2">Category</th>
-                    <th className="py-2">Action</th>
+                  <tr className="border-b border-gray-200 text-gray-600">
+                    <th className="py-3">Title</th>
+                    <th className="py-3">Price</th>
+                    <th className="py-3">Stock</th>
+                    <th className="py-3">Category</th>
+                    <th className="py-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProducts.map((item) => (
-                    <tr key={item._id} className="border-b border-pink-50">
-                      <td className="py-2">{item.title}</td>
-                      <td className="py-2">{formatPrice(item.price)}</td>
-                      <td className="py-2">{item.stock}</td>
-                      <td className="py-2">{CATEGORY_LABELS[item.category]}</td>
-                      <td className="py-2">
+                    <tr key={item._id} className="border-b border-gray-100 last:border-b-0">
+                      <td className="py-4 font-medium text-gray-900">{item.title}</td>
+                      <td className="py-4 text-gray-700">{formatPrice(item.price)}</td>
+                      <td className="py-4">
+                        <span
+                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                            item.stock <= 5 ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
+                          }`}
+                        >
+                          {item.stock}
+                        </span>
+                      </td>
+                      <td className="py-4 text-gray-700">{CATEGORY_LABELS[item.category]}</td>
+                      <td className="py-4">
                         <button
                           type="button"
-                          className="rounded-lg border border-pink-300 px-3 py-1 text-xs font-semibold text-pink-600 transition-colors hover:bg-pink-50"
+                          className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50"
                           onClick={() => handleDelete(item._id)}
                         >
                           Delete
@@ -336,47 +500,53 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
 
       {/* Orders Tab */}
       {tab === "orders" && (
-        <section className="rounded-2xl border border-pink-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-bold text-zinc-900">Recent Orders</h2>
+        <section className="rounded-3xl border border-pink-100 bg-white/90 p-6 shadow-sm backdrop-blur">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-600">Operations</p>
+              <h2 className="text-2xl font-black text-gray-900">Recent orders</h2>
+            </div>
+            <div className="text-sm text-gray-600">Update status inline and keep the queue moving.</div>
+          </div>
 
           {ordersLoading ? (
-            <p className="text-sm text-zinc-600">Loading orders...</p>
+            <p className="text-sm text-gray-600">Loading orders...</p>
           ) : orders.length === 0 ? (
-            <p className="text-sm text-zinc-600">No orders yet</p>
+            <p className="text-sm text-gray-600">No orders yet</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-max text-left text-sm">
                 <thead>
-                  <tr className="border-b border-pink-100 text-zinc-500">
-                    <th className="py-2 px-2">Order #</th>
-                    <th className="py-2 px-2">Customer</th>
-                    <th className="py-2 px-2">Email</th>
-                    <th className="py-2 px-2">Total</th>
-                    <th className="py-2 px-2">Items</th>
-                    <th className="py-2 px-2">Status</th>
-                    <th className="py-2 px-2">Date</th>
-                    <th className="py-2 px-2">Action</th>
+                  <tr className="border-b border-gray-200 text-gray-600">
+                    <th className="px-2 py-3">Order #</th>
+                    <th className="px-2 py-3">Customer</th>
+                    <th className="px-2 py-3">Email</th>
+                    <th className="px-2 py-3">Total</th>
+                    <th className="px-2 py-3">Items</th>
+                    <th className="px-2 py-3">Status</th>
+                    <th className="px-2 py-3">Date</th>
+                    <th className="px-2 py-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map((order) => (
-                    <tr key={order._id} className="border-b border-pink-50">
-                      <td className="py-2 px-2 font-semibold">{order.orderNumber}</td>
-                      <td className="py-2 px-2">
+                    <tr key={order._id} className="border-b border-gray-100 last:border-b-0">
+                      <td className="px-2 py-4 font-semibold text-gray-900">{order.orderNumber}</td>
+                      <td className="px-2 py-4 text-gray-700">
                         {order.customer.firstName} {order.customer.lastName}
                       </td>
-                      <td className="py-2 px-2">{order.customer.email}</td>
-                      <td className="py-2 px-2 font-bold text-pink-600">
+                      <td className="px-2 py-4 text-gray-700">{order.customer.email}</td>
+                      <td className="px-2 py-4 font-bold text-gray-900">
                         {formatPrice(order.pricing.total)}
                       </td>
-                      <td className="py-2 px-2">{order.items.length}</td>
-                      <td className="py-2 px-2">
+                      <td className="px-2 py-4 text-gray-700">{order.items.length}</td>
+                      <td className="px-2 py-4">
                         <select
                           value={order.status}
                           onChange={(e) =>
                             updateOrderStatus(order._id, e.target.value as Order["status"])
                           }
-                          className={`rounded-lg px-2 py-1 text-xs font-semibold border-0 cursor-pointer ${
+                          className={`cursor-pointer rounded-full border-0 px-3 py-2 text-xs font-semibold ${
                             STATUS_COLORS[order.status]
                           }`}
                         >
@@ -388,11 +558,11 @@ export default function AdminPanel({ products }: { products: ProductItem[] }) {
                           <option value="cancelled">Cancelled</option>
                         </select>
                       </td>
-                      <td className="py-2 px-2 text-xs">
+                      <td className="px-2 py-4 text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="py-2 px-2">
-                        <button className="rounded-lg border border-pink-300 px-3 py-1 text-xs font-semibold text-pink-600 transition-colors hover:bg-pink-50">
+                      <td className="px-2 py-4">
+                        <button className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50">
                           View
                         </button>
                       </td>

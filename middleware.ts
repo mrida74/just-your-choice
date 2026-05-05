@@ -28,6 +28,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow admin UI public pages (login, invitation acceptance)
+  if (pathname && (pathname === "/admin/login" || pathname.startsWith("/admin/invitation") || pathname === "/admin/invitations/accept")) {
+    return NextResponse.next();
+  }
+
   // Protect admin panel routes
   if (pathname.startsWith("/admin")) {
     // For UI routes, require session/cookie

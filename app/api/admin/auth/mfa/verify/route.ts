@@ -3,6 +3,7 @@ import { verifyTOTPCode, generateSessionToken, verifyBackupCode } from "@/lib/au
 import { rateLimitMFA } from "@/lib/rate-limiter";
 import { Admin } from "@/lib/models/Admin";
 import { logAdminAction } from "@/lib/user-service";
+import { hashSessionToken } from "@/lib/auth-utils";
 
 interface MFAVerifyRequest {
   adminId: string;
@@ -87,6 +88,8 @@ export async function POST(request: NextRequest) {
     // Update admin
     admin.last_login = new Date();
     admin.failed_login_attempts = 0;
+    admin.admin_session_token_hash = hashSessionToken(token);
+    admin.admin_session_expires_at = expiresAt;
     await admin.save();
 
     // Log successful MFA

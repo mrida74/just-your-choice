@@ -163,6 +163,13 @@ export function generateSessionToken(): string {
 }
 
 /**
+ * Hash an admin session token before persisting it.
+ */
+export function hashSessionToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+/**
  * Validate email format
  */
 export function isValidEmail(email: string): boolean {

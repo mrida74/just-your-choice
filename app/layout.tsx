@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import CategoryNavbar from "@/components/CategoryNavbar";
 import ClientOnly from "@/components/ClientOnly";
-import MobileFooterNav from "@/components/MobileFooterNav";
-import PageTransition from "@/components/PageTransition";
 import AuthProvider from "@/components/AuthProvider";
+import RouteShell from "@/components/RouteShell";
 import "./globals.css";
 
 
@@ -32,13 +30,7 @@ export default function RootLayout({
       <body className="min-h-full bg-pink-50/60 text-zinc-900">
         <ClientOnly>
           <AuthProvider>
-            <div className="app-shell-gradient min-h-full">
-              <CategoryNavbar />
-              <MobileFooterNav />
-              <PageTransition>
-                <main className="flex min-h-[calc(100vh-64px)] flex-col pb-36 md:pb-0">{children}</main>
-              </PageTransition>
-            </div>
+            <RouteShell>{children}</RouteShell>
           </AuthProvider>
         </ClientOnly>
       </body>

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Admin } from "@/lib/models/Admin";
 import { logAdminAction } from "@/lib/user-service";
+import { connectToDatabase } from "@/lib/mongodb";
+import { hashSessionToken } from "@/lib/auth-utils";
 
 /**
  * Middleware to verify admin authentication and permissions
@@ -17,13 +19,26 @@ export async function verifyAdminAuth(request: NextRequest) {
       };
     }
 
-    // In production, you'd verify JWT here
-    // For now, this is simplified
-    // You should implement proper JWT verification
+    await connectToDatabase();
+
+    const admin = await Admin.findOne({
+      admin_session_token_hash: hashSessionToken(adminToken),
+      admin_session_expires_at: { $gt: new Date() },
+      account_status: "active",
+    }).select("-password");
+
+    if (!admin) {
+      return {
+        authenticated: false,
+        error: "Session expired or invalid",
+        statusCode: 401,
+      };
+    }
 
     return {
       authenticated: true,
       token: adminToken,
+      admin,
     };
   } catch (error) {
     console.error("Auth verification error:", error);
@@ -155,9 +170,13 @@ export function forbiddenResponse(message = "Forbidden - insufficient permission
  */
 export async function getAdminFromToken(token: string) {
   try {
-    // This is where you'd decode JWT and extract admin info
-    // For now, returning null - implement with proper JWT verification
-    return null;
+    await connectToDatabase();
+
+    return await Admin.findOne({
+      admin_session_token_hash: hashSessionToken(token),
+      admin_session_expires_at: { $gt: new Date() },
+      account_status: "active",
+    }).select("-password");
   } catch (error) {
     console.error("Error extracting admin from token:", error);
     return null;

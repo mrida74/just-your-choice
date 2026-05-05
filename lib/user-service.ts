@@ -2,6 +2,7 @@ import { User } from "./models/User";
 import { Admin } from "./models/Admin";
 import { Invitation } from "./models/Invitation";
 import { AuditLog } from "./models/AuditLog";
+import { connectToDatabase } from "./mongodb";
 import bcryptjs from "bcryptjs";
 import { generateInvitationToken } from "./auth-utils";
 
@@ -91,6 +92,7 @@ export async function updateUserProfile(
  */
 export async function findAdminByEmail(email: string) {
   try {
+    await connectToDatabase();
     return await Admin.findOne({ email: email.toLowerCase() });
   } catch (error) {
     console.error("Error finding admin:", error);
@@ -110,6 +112,7 @@ export async function createAdmin(adminData: {
   invitedBy: string;
 }) {
   try {
+    await connectToDatabase();
     const hashedPassword = await bcryptjs.hash(adminData.password, 12);
 
     const admin = new Admin({
@@ -139,9 +142,13 @@ export async function verifyAdminPassword(
   password: string
 ): Promise<{ valid: boolean; admin: any }> {
   try {
-    const admin = await Admin.findOne({ email: email.toLowerCase() }).select(
+    await connectToDatabase();
+    const normalizedEmail = email.toLowerCase();
+    
+    const admin = await Admin.findOne({ email: normalizedEmail }).select(
       "+password"
     );
+    
     if (!admin) {
       return { valid: false, admin: null };
     }
@@ -164,6 +171,7 @@ export async function sendAdminInvitation(
   expiryHours: number = 24
 ) {
   try {
+    await connectToDatabase();
     // Check if admin already exists
     const existingAdmin = await findAdminByEmail(email);
     if (existingAdmin) {
@@ -277,6 +285,11 @@ export async function logAdminAction(auditData: {
   changes?: { before: any; after: any };
 }) {
   try {
+    await connectToDatabase();
+    // Don't log with invalid adminId (like "unknown")
+    if (auditData.adminId === "unknown" || !auditData.adminId.match(/^[0-9a-fA-F]{24}$/)) {
+      return;
+    }
     const auditLog = new AuditLog(auditData);
     return await auditLog.save();
   } catch (error) {
@@ -293,6 +306,7 @@ export async function getAdminAuditLogs(
   options?: { limit?: number; skip?: number; action?: string }
 ) {
   try {
+    await connectToDatabase();
     const query: any = {};
     if (adminId) {
       query.adminId = adminId;
@@ -316,6 +330,7 @@ export async function getAdminAuditLogs(
  */
 export async function disableAdminAccount(adminId: string, reason?: string) {
   try {
+    await connectToDatabase();
     return await Admin.findByIdAndUpdate(
       adminId,
       {
@@ -334,6 +349,7 @@ export async function disableAdminAccount(adminId: string, reason?: string) {
  */
 export async function getAdminWithPermissions(adminId: string) {
   try {
+    await connectToDatabase();
     return await Admin.findById(adminId).select("-password");
   } catch (error) {
     console.error("Error getting admin:", error);

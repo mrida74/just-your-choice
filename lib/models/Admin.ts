@@ -123,6 +123,18 @@ const adminSchema = new Schema(
       default: 0,
     },
     last_failed_login: Date,
+
+    // Admin session tracking
+    admin_session_token_hash: {
+      type: String,
+      select: false,
+      index: true,
+    },
+    admin_session_expires_at: {
+      type: Date,
+      select: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

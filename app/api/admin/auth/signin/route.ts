@@ -3,6 +3,7 @@ import { verifyAdminPassword, logAdminAction, getAdminWithPermissions } from "@/
 import { generateSessionToken, validatePasswordStrength } from "@/lib/auth-utils";
 import { rateLimitLogin } from "@/lib/rate-limiter";
 import { Admin } from "@/lib/models/Admin";
+import { hashSessionToken } from "@/lib/auth-utils";
 import crypto from "crypto";
 
 interface AdminLoginRequest {
@@ -93,15 +94,16 @@ export async function POST(request: NextRequest) {
     if (mfaEnabled) {
       // Generate temporary session for MFA verification
       const sessionId = crypto.randomBytes(32).toString("hex");
-      
-      // Store in temporary session (you'd use Redis in production)
-      // For now, we'll return sessionId and require client to call MFA endpoint
-      
+
+      // In production you'd persist the sessionId -> admin mapping in Redis
+      // For now return admin id/email so the client can continue MFA flow
+
       return NextResponse.json(
         {
           success: true,
           requiresMFA: true,
           sessionId,
+          admin: { id: admin._id.toString(), email: admin.email },
           message: "MFA verification required",
         },
         { status: 200 }
@@ -115,6 +117,8 @@ export async function POST(request: NextRequest) {
       // Reset failed login attempts
       admin.failed_login_attempts = 0;
       admin.last_login = new Date();
+      admin.admin_session_token_hash = hashSessionToken(token);
+      admin.admin_session_expires_at = expiresAt;
       await admin.save();
 
       // Log successful login
