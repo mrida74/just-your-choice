@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Heart, Home, ShoppingBag, ShoppingCart, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { getCartCount } from "@/lib/cart";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ export default function MobileFooterNav() {
   const pathname = usePathname();
   const [cartCount, setCartCount] = useState(0);
   const [navbarVisible, setNavbarVisible] = useState(true);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const syncCartCount = () => setCartCount(getCartCount());
@@ -97,12 +99,20 @@ export default function MobileFooterNav() {
         </button>
 
         <Link
-          href="/admin"
-          className={cn(itemClass, pathname === "/admin" ? "text-pink-600" : "text-zinc-600")}
+          href={session ? "/account" : "/login"}
+          className={cn(itemClass, pathname === "/login" || pathname === "/account" ? "text-pink-600" : "text-zinc-600")}
           aria-label="Account"
           title="Account"
         >
-          <User size={24} strokeWidth={2.2} />
+          {session?.user?.image ? (
+            <img src={session.user.image} alt={session.user.name ?? "Avatar"} className="h-6 w-6 rounded-full object-cover" />
+          ) : session?.user?.name ? (
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-50 text-pink-600 font-semibold text-sm">
+              {session.user.name.charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <User size={24} strokeWidth={2.2} />
+          )}
           <span className="text-[13px] font-semibold leading-none">Account</span>
         </Link>
       </div>

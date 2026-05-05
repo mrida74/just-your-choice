@@ -1,5 +1,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../lib/auth";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,6 +15,11 @@ export default async function OrderSuccessPage({
   params: Promise<{ orderNumber: string }>;
 }) {
   const { orderNumber } = await params;
+
+  const session = await getServerSession(authOptions as any);
+  const viewOrdersHref = session
+    ? "/account#order-tracking"
+    : `/login?callbackUrl=${encodeURIComponent("/account#order-tracking")}`;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-4 py-12">
@@ -47,7 +54,7 @@ export default async function OrderSuccessPage({
             Continue Shopping
           </Link>
           <Link
-            href="/cart"
+            href={viewOrdersHref}
             className="block w-full border border-pink-600 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition-colors"
           >
             View Orders

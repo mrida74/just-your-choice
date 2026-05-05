@@ -1,6 +1,7 @@
 ﻿import { connectToDatabase } from "@/lib/mongodb";
 import { OrderModel } from "@/lib/models/Order";
 import ProductModel from "@/lib/models/Product";
+import { User } from "@/lib/models/User";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
       shippingMethod,
       paymentMethod,
       notes,
+      createAccount,
     } = body;
 
     // Validate required fields
@@ -72,13 +74,14 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      verifiedItems.push({
-        productId: item.productId,
-        title: product.title,
-        price: product.price,
-        quantity: item.quantity,
-        size: item.size || undefined,
-      });
+        verifiedItems.push({
+          productId: item.productId,
+          title: product.title,
+          price: product.price,
+          quantity: item.quantity,
+          size: item.size || undefined,
+          total: product.price * item.quantity,
+        });
 
       // Reduce stock
       product.stock -= item.quantity;
@@ -88,16 +91,20 @@ export async function POST(req: NextRequest) {
     // Create order
     const order = new OrderModel({
       customer: {
+        name: `${firstName} ${lastName}`,
         email: email.toLowerCase(),
         firstName,
         lastName,
         phone,
       },
       shipping: {
-        address,
-        city,
-        postalCode,
-        country,
+        address: {
+          street: address,
+          city,
+          postalCode,
+          country,
+        },
+        method: shippingMethod,
       },
       items: verifiedItems,
       pricing: {
@@ -113,6 +120,43 @@ export async function POST(req: NextRequest) {
     });
 
     await order.save();
+
+    // Optionally create a user account for guest checkout
+    try {
+      if (createAccount) {
+        const emailLower = email.toLowerCase();
+        const existing = await User.findOne({ email: emailLower }).exec();
+        if (!existing) {
+          const user = new User({
+            email: emailLower,
+            name: `${firstName} ${lastName}`,
+            phone,
+            auth_method: "local",
+            profile: {
+              firstName,
+              lastName,
+              phone,
+              addresses: [
+                {
+                  label: "Default",
+                  street: address,
+                  city,
+                  country,
+                  zipCode: postalCode,
+                  isDefault: true,
+                },
+              ],
+            },
+            verified: false,
+          });
+
+          await user.save();
+        }
+      }
+    } catch (err) {
+      // Don't fail the order if user creation fails; just log
+      console.error("Failed to create user during checkout:", err);
+    }
 
     return NextResponse.json(
       {

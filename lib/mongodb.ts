@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 
 declare global {
   var mongooseConnection: {
@@ -15,6 +16,29 @@ const cached = global.mongooseConnection ?? {
 };
 
 global.mongooseConnection = cached;
+
+// MongoDB native client for NextAuth adapter
+let _mongoClientPromise: Promise<MongoClient> | null = null;
+
+function getMongoClientPromise(): Promise<MongoClient> {
+  if (!MONGODB_URI) {
+    throw new Error("MONGODB_URI is not set. Add it to your environment variables.");
+  }
+
+  if (!_mongoClientPromise) {
+    _mongoClientPromise = new Promise((resolve, reject) => {
+      const client = new MongoClient(MONGODB_URI);
+      client.connect()
+        .then(() => resolve(client))
+        .catch(reject);
+    });
+  }
+
+  return _mongoClientPromise;
+}
+
+// Export as both named export and a thenable for NextAuth adapter
+export const mongoClient = getMongoClientPromise();
 
 export async function connectToDatabase() {
   if (!MONGODB_URI) {

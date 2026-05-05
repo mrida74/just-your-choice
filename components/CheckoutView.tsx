@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import { ChevronRight, Loader2, AlertCircle } from "lucide-react";
 
 import { clearCart, getCartItems } from "@/lib/cart";
@@ -37,6 +38,7 @@ export default function CheckoutView() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1); // 1: Shipping, 2: Review, 3: Payment
+  const [createAccount, setCreateAccount] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -52,6 +54,8 @@ export default function CheckoutView() {
     notes: "",
   });
 
+  const { data: session } = useSession();
+
   useEffect(() => {
     setItems(getCartItems());
     setIsHydrated(true);
@@ -61,6 +65,40 @@ export default function CheckoutView() {
 
     return () => window.removeEventListener("cart:updated", sync);
   }, []);
+
+  // If user is signed in, fetch profile and prefill address
+  useEffect(() => {
+    if (!session?.user?.email) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/me");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          email: data.email || prev.email,
+          firstName: data.profile?.firstName || data.name?.split(" ")?.[0] || prev.firstName,
+          lastName: data.profile?.lastName || data.name?.split(" ")?.slice(1).join(" ") || prev.lastName,
+          phone: data.phone || prev.phone,
+          address: data.profile?.address?.street || prev.address,
+          city: data.profile?.address?.city || prev.city,
+          postalCode: data.profile?.address?.postalCode || prev.postalCode,
+          country: data.profile?.address?.country || prev.country,
+        }));
+      } catch (err) {
+        // ignore
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user?.email]);
 
   const subtotal = useMemo(
     () => (items ?? []).reduce((total, item) => total + item.price * item.quantity, 0),
@@ -77,6 +115,10 @@ export default function CheckoutView() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCreateAccount(e.target.checked);
   };
 
   const validateShippingStep = () => {
@@ -121,6 +163,7 @@ export default function CheckoutView() {
             quantity: item.quantity,
             size: "", // Add size if needed
           })),
+          createAccount: createAccount,
         }),
       });
 
@@ -371,7 +414,23 @@ export default function CheckoutView() {
           </div>
         </div>
 
-        {/* Error Message */}
+          {/* Create account checkbox for guests */}
+          {!session?.user && (
+            <div className="rounded-2xl border border-pink-100 bg-white p-4 flex items-center gap-3">
+              <input
+                id="createAccount"
+                type="checkbox"
+                checked={createAccount}
+                onChange={handleCheckboxChange}
+                className="accent-pink-600 h-4 w-4"
+              />
+              <label htmlFor="createAccount" className="text-sm text-zinc-700">
+                Create an account with this email after placing the order
+              </label>
+            </div>
+          )}
+
+          {/* Error Message */}
         {error && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
             <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />

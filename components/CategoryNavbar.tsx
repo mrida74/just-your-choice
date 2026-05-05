@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Heart, LogIn, Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Heart, LogIn, Menu, Search, ShoppingCart, X, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { getCartCount } from "@/lib/cart";
 import Logo from "./Logo";
@@ -45,6 +46,7 @@ export default function CategoryNavbar() {
   };
 
   const mobileMenuOpen = mobileCategoryMenuOpen || mobileSiteMenuOpen;
+  const { data: session } = useSession();
 
   return (
     <header id="site-navbar" className="z-50 border-b border-pink-100 bg-white/90 backdrop-blur-lg">
@@ -117,12 +119,25 @@ export default function CategoryNavbar() {
             </Link>
 
             <Link
-              href="/admin"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-pink-100 bg-white text-zinc-700 transition-colors hover:border-pink-200 hover:text-pink-600"
-              aria-label="Login"
-              title="Login"
+              href="/account"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-pink-100 bg-white text-zinc-700 transition-colors hover:border-pink-200 hover:text-pink-600 overflow-hidden"
+              aria-label={"Account"}
+              title={"Account"}
             >
-              <LogIn size={20} />
+              {/* Show avatar if signed in, initials fallback, otherwise generic icon */}
+              {session?.user?.image ? (
+                <img
+                  src={session.user.image}
+                  alt={session.user.name ?? "Avatar"}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : session?.user?.name ? (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 text-pink-600 font-semibold">
+                  {session.user.name.charAt(0).toUpperCase()}
+                </div>
+              ) : (
+                <User size={24} strokeWidth={2.2} />
+              )}
             </Link>
           </div>
         </nav>
