@@ -66,9 +66,11 @@ export function checkPermission(
 
   // Check specific permission for managers
   const permissionMap: Record<string, keyof typeof admin.permissions> = {
+    view_products: "canManageProducts",
     create_product: "canManageProducts",
     update_product: "canManageProducts",
     delete_product: "canManageProducts",
+    view_orders: "canManageOrders",
     create_order: "canManageOrders",
     update_order: "canManageOrders",
     cancel_order: "canManageOrders",
