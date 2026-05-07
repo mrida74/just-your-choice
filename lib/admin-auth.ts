@@ -70,6 +70,8 @@ export function checkPermission(
     create_product: "canManageProducts",
     update_product: "canManageProducts",
     delete_product: "canManageProducts",
+    view_categories: "canManageProducts",
+    update_categories: "canManageProducts",
     view_orders: "canManageOrders",
     create_order: "canManageOrders",
     update_order: "canManageOrders",
