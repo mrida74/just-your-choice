@@ -30,11 +30,18 @@ const adminSchema = new Schema(
       select: false, // Don't return password by default
     },
     
-    // Role
+    // Role (legacy, can be deprecated)
     role: {
       type: String,
       enum: ["admin", "manager"],
       required: true,
+      index: true,
+    },
+    
+    // New role-based system
+    roleId: {
+      type: Schema.Types.ObjectId,
+      ref: "Role",
       index: true,
     },
     

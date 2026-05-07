@@ -5,7 +5,8 @@ import { createOrder, customerEmailExists, linkGuestOrderToUser } from "@/lib/or
 import { findUserByEmail, createUser, updateUserProfile } from "@/lib/user-service";
 import { isValidEmail, isValidPhone } from "@/lib/auth-utils";
 import { logAdminAction } from "@/lib/user-service";
-import { AuditLog } from "@/lib/models/AuditLog";
+import AuditLogModel from "@/lib/models/AuditLog";
+import { recordRedemption } from "@/lib/coupon-redemption-service";
 
 interface CheckoutRequest {
   items: Array<{
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     // Log the action
     try {
-      const logEntry = new AuditLog({
+      const logEntry = new AuditLogModel({
         adminId: null,
         adminEmail: "system",
         action: "create_order",
@@ -187,6 +188,22 @@ export async function POST(request: NextRequest) {
       await logEntry.save();
     } catch (logError) {
       console.error("Error logging order creation:", logError);
+    }
+
+    // Record coupon redemption if coupon was used
+    if (body.pricing.couponCode && body.pricing.discount && body.pricing.discount > 0) {
+      try {
+        await recordRedemption({
+          couponCode: body.pricing.couponCode,
+          userId,
+          guestEmail,
+          orderId: order._id.toString(),
+          discountAmount: body.pricing.discount,
+        });
+      } catch (redemptionError) {
+        console.error("Error recording coupon redemption:", redemptionError);
+        // Don't fail the order if redemption recording fails - log it but continue
+      }
     }
 
     return NextResponse.json(

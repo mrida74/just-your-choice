@@ -1,10 +1,19 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  BadgePercent,
   Boxes,
   CreditCard,
+  FileText,
+  Images,
   Package,
+  RotateCcw,
+  Settings2,
   ShoppingBag,
+  ShieldCheck,
+  Star,
+  Tags,
+  Truck,
 } from "lucide-react";
 
 import {
@@ -23,6 +32,18 @@ type AdminOverviewProps = {
 export default function AdminOverview({ adminName, snapshot }: AdminOverviewProps) {
   const { stats, recentOrders, lowStock } = snapshot;
   const greeting = adminName ? `Welcome back, ${adminName}` : "Welcome back";
+
+  const quickLinks = [
+    { label: "Categories", href: "/admin/categories", icon: Tags, note: "SEO and banners" },
+    { label: "Coupons", href: "/admin/coupons", icon: BadgePercent, note: "Discount rules" },
+    { label: "Reviews", href: "/admin/reviews", icon: Star, note: "Moderation" },
+    { label: "Settings", href: "/admin/settings", icon: Settings2, note: "Store config" },
+    { label: "Roles", href: "/admin/roles", icon: ShieldCheck, note: "Permissions" },
+    { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText, note: "Activity trail" },
+    { label: "Media Library", href: "/admin/media", icon: Images, note: "Uploads & assets" },
+    { label: "Shipping", href: "/admin/shipping", icon: Truck, note: "Tracking updates" },
+    { label: "Refunds", href: "/admin/refunds-returns", icon: RotateCcw, note: "Returns workflow" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -108,6 +129,46 @@ export default function AdminOverview({ adminName, snapshot }: AdminOverviewProp
               <ShoppingBag size={22} />
             </span>
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-pink-100 bg-white/90 p-6 shadow-sm backdrop-blur">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
+              Quick access
+            </p>
+            <h2 className="mt-2 text-2xl font-black text-zinc-900">Management shortcuts</h2>
+          </div>
+          <Link
+            href="/admin/orders"
+            className="inline-flex items-center gap-2 rounded-xl border border-pink-200 px-4 py-2 text-sm font-semibold text-pink-700 transition-colors hover:border-pink-300 hover:bg-pink-50"
+          >
+            Orders
+            <ArrowUpRight size={16} />
+          </Link>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {quickLinks.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group flex items-start gap-3 rounded-2xl border border-zinc-100 bg-white px-4 py-4 transition-colors hover:border-pink-200 hover:bg-pink-50"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-100 text-pink-600 transition-colors group-hover:bg-pink-200">
+                  <Icon size={20} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-zinc-900">{item.label}</span>
+                  <span className="mt-1 block text-xs text-zinc-500">{item.note}</span>
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

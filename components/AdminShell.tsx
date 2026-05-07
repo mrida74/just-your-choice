@@ -6,9 +6,18 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Boxes,
+  BadgePercent,
+  FileText,
   LayoutDashboard,
+  Images,
   Package,
+  RotateCcw,
+  Settings2,
   ShoppingBag,
+  ShieldCheck,
+  Star,
+  Tags,
+  Truck,
   Users,
 } from "lucide-react";
 
@@ -36,12 +45,11 @@ export default function AdminShell({ children }: AdminShellProps) {
           label: "Analytics",
           href: "/admin/analytics",
           icon: BarChart3,
-          comingSoon: true,
         },
       ],
     },
     {
-      title: "Commerce",
+      title: "Catalog",
       items: [
         {
           label: "Products",
@@ -49,19 +57,84 @@ export default function AdminShell({ children }: AdminShellProps) {
           icon: Package,
         },
         {
-          label: "Orders",
-          href: "/admin/orders",
-          icon: ShoppingBag,
+          label: "Categories",
+          href: "/admin/categories",
+          icon: Tags,
         },
         {
           label: "Inventory",
           href: "/admin/inventory",
           icon: Boxes,
         },
+      ],
+    },
+    {
+      title: "Sales",
+      items: [
+        {
+          label: "Orders",
+          href: "/admin/orders",
+          icon: ShoppingBag,
+        },
+        {
+          label: "Coupons",
+          href: "/admin/coupons",
+          icon: BadgePercent,
+        },
+        {
+          label: "Refunds & Returns",
+          href: "/admin/refunds-returns",
+          icon: RotateCcw,
+        },
+      ],
+    },
+    {
+      title: "Engagement",
+      items: [
         {
           label: "Customers",
           href: "/admin/customers",
           icon: Users,
+        },
+        {
+          label: "Reviews",
+          href: "/admin/reviews",
+          icon: Star,
+        },
+        {
+          label: "Media Library",
+          href: "/admin/media",
+          icon: Images,
+        },
+      ],
+    },
+    {
+      title: "Operations",
+      items: [
+        {
+          label: "Shipping",
+          href: "/admin/shipping",
+          icon: Truck,
+        },
+        {
+          label: "Settings",
+          href: "/admin/settings",
+          icon: Settings2,
+        },
+      ],
+    },
+    {
+      title: "Governance",
+      items: [
+        {
+          label: "Roles",
+          href: "/admin/roles",
+          icon: ShieldCheck,
+        },
+        {
+          label: "Audit Logs",
+          href: "/admin/audit-logs",
+          icon: FileText,
         },
       ],
     },
@@ -71,7 +144,7 @@ export default function AdminShell({ children }: AdminShellProps) {
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       {showChrome ? (
         <div className="flex min-h-screen flex-col lg:flex-row">
-          <aside className="border-b border-zinc-200 bg-white/95 px-4 py-6 backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:border-b-0 lg:border-r lg:px-6">
+          <aside className="border-b border-zinc-200 bg-white/95 px-4 py-6 backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:border-b-0 lg:border-r lg:px-6 lg:overflow-y-auto lg:overscroll-contain">
             <div className="flex items-center justify-between gap-3 lg:flex-col lg:items-start">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-600">
@@ -125,11 +198,6 @@ export default function AdminShell({ children }: AdminShellProps) {
                             </span>
                             {item.label}
                           </span>
-                          {item.comingSoon ? (
-                            <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                              Soon
-                            </span>
-                          ) : null}
                         </Link>
                       );
                     })}

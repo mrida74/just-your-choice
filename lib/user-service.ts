@@ -1,7 +1,7 @@
 import { User } from "./models/User";
 import { Admin } from "./models/Admin";
 import { Invitation } from "./models/Invitation";
-import { AuditLog } from "./models/AuditLog";
+import AuditLogModel from "./models/AuditLog";
 import { connectToDatabase } from "./mongodb";
 import bcryptjs from "bcryptjs";
 import { generateInvitationToken } from "./auth-utils";
@@ -290,7 +290,48 @@ export async function logAdminAction(auditData: {
     if (auditData.adminId === "unknown" || !auditData.adminId.match(/^[0-9a-fA-F]{24}$/)) {
       return;
     }
-    const auditLog = new AuditLog(auditData);
+    // Normalize action to match enum in AuditLog schema
+    const normalizeAction = (input: string) => {
+      if (!input) return "view";
+      const s = input.toLowerCase();
+      if (s.includes("login") || s.includes("signin")) return "signin";
+      if (s.includes("logout")) return "logout";
+      if (s.includes("create")) return "create";
+      if (s.includes("update")) return "update";
+      if (s.includes("delete")) return "delete";
+      if (s.includes("export")) return "export";
+      if (s.includes("approve")) return "approve";
+      if (s.includes("reject")) return "reject";
+      if (s.includes("download")) return "download";
+      return s;
+    };
+
+    const normalizedAction = normalizeAction(auditData.action);
+
+    // Ensure required fields exist for schema
+    const resourceType = (auditData.resource || "admin").toString();
+    const resourceId = auditData.resourceId || auditData.adminId || "";
+    const adminEmail = (auditData.adminEmail || "").toLowerCase();
+    const adminName = (auditData as any).adminName || adminEmail.split("@")[0] || "";
+
+    const payload = {
+      action: normalizedAction,
+      resourceType,
+      resourceId,
+      resourceName: auditData.description,
+      adminId: auditData.adminId,
+      adminEmail,
+      adminName,
+      changes: auditData.changes,
+      metadata: {
+        ipAddress: auditData.ipAddress,
+        userAgent: auditData.userAgent,
+      },
+      status: auditData.status || "success",
+      errorMessage: auditData.errorMessage,
+    } as any;
+
+    const auditLog = new AuditLogModel(payload);
     return await auditLog.save();
   } catch (error) {
     console.error("Error logging admin action:", error);
@@ -315,7 +356,7 @@ export async function getAdminAuditLogs(
       query.action = options.action;
     }
 
-    return await AuditLog.find(query)
+    return await AuditLogModel.find(query)
       .sort({ createdAt: -1 })
       .limit(options?.limit || 100)
       .skip(options?.skip || 0);
@@ -354,6 +395,31 @@ export async function getAdminWithPermissions(adminId: string) {
   } catch (error) {
     console.error("Error getting admin:", error);
     return null;
+  }
+}
+
+/**
+ * Get all admins (serialized)
+ */
+export async function getAdmins() {
+  try {
+    await connectToDatabase();
+    const docs = await Admin.find().sort({ email: 1 }).lean();
+    return docs.map((doc: any) => ({
+      id: doc._id.toString(),
+      email: doc.email,
+      name: doc.name,
+      phone: doc.phone,
+      role: doc.role,
+      roleId: doc.roleId ? doc.roleId.toString() : null,
+      account_status: doc.account_status,
+      last_login: doc.last_login ? doc.last_login.toISOString() : null,
+      invited_by: doc.invited_by ? doc.invited_by.toString() : null,
+      createdAt: doc.createdAt?.toISOString(),
+    }));
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    return [];
   }
 }
 

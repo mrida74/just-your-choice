@@ -1,73 +1,79 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema } from "mongoose";
 
 const auditLogSchema = new Schema(
   {
-    // Admin who performed action
+    action: {
+      type: String,
+      required: true,
+      enum: [
+        "view", "create", "update", "delete",
+        "publish", "archive", "approve", "reject",
+        "export", "import", "download",
+        "login", "logout", "signin",
+        "permissions_change", "role_assign", "role_remove",
+      ],
+      index: true,
+    },
+    
+    resourceType: {
+      type: String,
+      required: true,
+      enum: [
+        "product", "category", "order", "customer",
+        "coupon", "review", "admin", "role", "setting",
+        "media", "shipping", "refund",
+      ],
+      index: true,
+    },
+    
+    resourceId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    
+    resourceName: String,
+    
     adminId: {
       type: Schema.Types.ObjectId,
       ref: "Admin",
       required: true,
       index: true,
     },
+    
     adminEmail: {
       type: String,
       required: true,
-    },
-    
-    // Action details
-    action: {
-      type: String,
-      enum: [
-        "create_product",
-        "update_product",
-        "delete_product",
-        "create_order",
-        "update_order",
-        "cancel_order",
-        "create_admin",
-        "update_admin",
-        "disable_admin",
-        "revoke_session",
-        "update_settings",
-        "create_promotion",
-        "delete_promotion",
-        "view_analytics",
-        "export_data",
-        "login_failed",
-        "login_success",
-        "mfa_enabled",
-        "mfa_disabled",
-        "password_changed",
-        "session_revoked",
-      ],
-      required: true,
+      lowercase: true,
+      trim: true,
       index: true,
     },
     
-    // Resource affected
-    resource: {
+    adminName: {
       type: String,
-      enum: ["product", "order", "admin", "user", "promotion", "settings", "auth"],
+      required: true,
     },
-    resourceId: String,
     
-    // Changes made
+    // Track changes for update operations
     changes: {
-      before: Schema.Types.Mixed,
-      after: Schema.Types.Mixed,
+      type: Schema.Types.Mixed,
     },
     
-    // Context
-    description: String,
+    // Additional metadata
+    metadata: {
+      type: Schema.Types.Mixed,
+    },
+    
     ipAddress: String,
     userAgent: String,
     
-    // Status
     status: {
       type: String,
       enum: ["success", "failed"],
       default: "success",
+      index: true,
     },
+    
     errorMessage: String,
   },
   {
@@ -75,13 +81,14 @@ const auditLogSchema = new Schema(
   }
 );
 
-// Indexes for queries
+// Compound indexes for common queries
 auditLogSchema.index({ adminId: 1, createdAt: -1 });
-auditLogSchema.index({ action: 1, createdAt: -1 });
-auditLogSchema.index({ resource: 1, resourceId: 1, createdAt: -1 });
+auditLogSchema.index({ resourceType: 1, resourceId: 1, createdAt: -1 });
 auditLogSchema.index({ createdAt: -1 });
+auditLogSchema.index({ action: 1, createdAt: -1 });
+auditLogSchema.index({ adminEmail: 1, createdAt: -1 });
 
-export type IAuditLog = InferSchemaType<typeof auditLogSchema>;
+// TTL index: Keep logs for 1 year (365 days = 31536000 seconds)
+auditLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 31536000 });
 
-export const AuditLog =
-  models.AuditLog || model<IAuditLog>("AuditLog", auditLogSchema);
+export default models.AuditLog || model("AuditLog", auditLogSchema);
